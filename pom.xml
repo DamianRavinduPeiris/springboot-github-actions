@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.damian</groupId>
-    <artifactId>sga</artifactId>
+    <artifactId>github-actions-demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SpringBoot-Github-Actions</name>
     <description>SpringBoot-Github-Actions</description>

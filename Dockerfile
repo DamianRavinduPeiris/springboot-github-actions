@@ -8,6 +8,6 @@ RUN mvn clean install
 #Running the application.
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /app/target/aws-0.0.1-SNAPSHOT.jar ./demo-aws.jar
+COPY --from=build /app/target/github-actions-demo-0.0.1-SNAPSHOT.jar github-actions-demo.jar
 EXPOSE 8080
 CMD ["java", "-jar", "github-actions-demo.jar"]

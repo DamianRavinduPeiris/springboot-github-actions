@@ -60,8 +60,11 @@
                         </exclude>
                     </excludes>
                 </configuration>
+
             </plugin>
         </plugins>
+        <finalName>
+            github-actions-demo
+        </finalName>
     </build>
-
 </project>

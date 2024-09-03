@@ -62,19 +62,25 @@ jobs:
           # Save the private key to a file
           echo "$PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          
+
           # SSH into EC2 and deploy the Docker container
-          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST << 'EOF'
-            # Stop and remove the old container
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $USER@$HOST << EOF
+            # Print variables for debugging
+            echo "ECR_REGISTRY: $ECR_REGISTRY"
+            echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+            echo "IMAGE_TAG: $IMAGE_TAG"
+
+            # Stop and remove the old container, if it exists
             docker stop my_container || true
             docker rm my_container || true
-          
+
             # Pull the new image from ECR
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          
+            docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
             # Run the new container
-            docker run -d --name my_container -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+            docker run -d --name my_container -p 80:80 "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           EOF
-          
+
           # Clean up the private key file
           rm private_key.pem
+

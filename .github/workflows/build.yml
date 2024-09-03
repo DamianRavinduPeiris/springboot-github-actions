@@ -39,11 +39,18 @@ jobs:
         id: login-pf-aws-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Debug: Print environment variables
+      - name: Debug environment variables
+        run: |
+          echo "ECR_REGISTRY=${{ steps.login-pf-aws-ecr.outputs.registry }}"
+          echo "ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}"
+          echo "IMAGE_TAG=${{ github.sha }}"
+
       # Step 6: Build and push Docker image
       - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY}}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .

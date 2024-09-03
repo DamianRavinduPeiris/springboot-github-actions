@@ -70,32 +70,23 @@ jobs:
             echo "ECR_REPOSITORY: $ECR_REPOSITORY"
             echo "IMAGE_TAG: $IMAGE_TAG"
 
-            # Stop and remove the old container, if it exists
+            # Stop and remove all running containers
+            docker stop \$(docker ps -q) || true
+            docker rm \$(docker ps -a -q) || true
+
+            # Stop and remove a specific container if it exists
             docker stop my_container || true
             docker rm my_container || true
 
-           # Login to ECR
+            # Login to ECR
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-  
+
             # Pull the new image from ECR
             docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-            # Check if port 80 is already in use
-            if lsof -i:80; then
-            # Find the container using port 80
-            CONTAINER_ID=$(docker ps --filter "publish=80" --format "{{.ID}}")
-  
-            # Stop the container using port 80
-            docker stop $CONTAINER_ID
-  
-            # Remove the stopped container
-            docker rm $CONTAINER_ID
-            fi
-  
-          # Run the new container
-          docker run -d --name my_container -p 80:80 "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            # Run the new container
+            docker run -d --name my_container -p 80:80 "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           EOF
 
           # Clean up the private key file
           rm private_key.pem
-

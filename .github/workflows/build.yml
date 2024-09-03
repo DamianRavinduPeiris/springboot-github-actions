@@ -18,6 +18,7 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
           ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
@@ -33,7 +34,7 @@ jobs:
           # SSH into EC2 and deploy
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_HOST << EOF
             # Login to Docker
-            $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY)
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
             
             # Pull the latest Docker image
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

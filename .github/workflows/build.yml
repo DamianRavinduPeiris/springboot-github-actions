@@ -85,7 +85,7 @@ jobs:
             docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
             # Run the new container
-            docker run -d --name my_container -p 80:80 "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+            docker run -d --name my_container -p 80:8080 "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           EOF
 
           # Clean up the private key file

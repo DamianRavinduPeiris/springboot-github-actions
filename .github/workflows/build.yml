@@ -26,51 +26,25 @@ jobs:
       - name: Build with Maven
         run: mvn clean install
 
-      # Step 4: Set up Docker Buildx for multi-platform builds
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Step 5: Configure AWS credentials using GitHub secrets
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      # Step 4: Setup AWS ECR Details
+      - name: Setup AWS ECR Details
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS access key ID stored in GitHub secrets
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS secret access key stored in GitHub secrets
-          aws-region: ${{ secrets.AWS_REGION }}  # AWS region where your ECR is hosted
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 6: Log in to Amazon ECR to push the Docker image
+      # Step 5: Login to Amazon ECR
       - name: Login to Amazon ECR
-        id: login-ecr  # The `id` is used to reference the output of this step in later steps
+        id: login-pf-aws-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Step 7: Build, tag, and push the Docker image to ECR
-      - name: Build, tag, and push image to ECR
+      # Step 6: Build and push Docker image
+      - name: Build and push Docker image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}  # Retrieve the ECR registry URL from the previous step
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}  # ECR repository name stored in GitHub secrets
-          IMAGE_TAG: latest  # Tag for the Docker image
+          ECR_REGISTRY: ${{ steps.login-pf-aws-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY}}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build the Docker image and tag it with the ECR repository URL and image tag
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          # Push the Docker image to the ECR repository
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      # Step 8: SSH into the EC2 instance and deploy the Docker image
-      - name: Login to EC2 and deploy
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}  # Use the ECR registry URL
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}  # ECR repository name
-          IMAGE_TAG: latest  # Docker image tag
-        run: |
-          # SSH into the EC2 instance using the provided key and username
-          ssh -i ${{ secrets.EC2_KEY }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # Log in to ECR from the EC2 instance
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
-            # Pull the latest Docker image from ECR
-            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-            # Stop and remove any running container with the same name
-            docker stop my-running-container || true
-            docker rm my-running-container || true
-            # Run the Docker container with the pulled image
-            docker run -d --name my-running-container -p 80:80 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          EOF

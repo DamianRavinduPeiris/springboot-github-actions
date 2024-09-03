@@ -16,7 +16,7 @@ public class TestController {
     }
     @GetMapping("/yo")
     public ResponseEntity<Response> yoo() {
-        return new ResponseEntity<>(new Response(200, "yoooo!", null), HttpStatus.OK);
+        return new ResponseEntity<>(new Response(200, "Status : UP!!", null), HttpStatus.OK);
     }
 
 }

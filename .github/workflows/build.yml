@@ -9,7 +9,6 @@ on:
 jobs:
   build:
 
-    # Specify the OS environment for the build
     runs-on: ubuntu-latest
 
     steps:
@@ -36,8 +35,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr  # The `id` is used to reference the output of this step in later steps
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          region: ${{ secrets.AWS_REGION }}  # AWS region where your ECR is hosted
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS region where your ECR is hosted
 
       # Step 6: Build, tag, and push the Docker image to ECR
       - name: Build, tag, and push image to ECR
